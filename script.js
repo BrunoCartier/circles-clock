@@ -1,7 +1,7 @@
 /*jslint indent: 4, maxlen: 80 */
-/*global window */
+/*globals window, document */
 
-(function (win) {
+(function (win, doc) {
     'use strict';
 
     var // Constants
@@ -10,22 +10,26 @@
 
         // Variables
         c = win.Circles,
-        hoursCircle,
-        minutesCircle,
-        secondsCircle,
         allCircles,
 
         // Functions
         debounce,
         makeText,
         makeCircleOptions,
+        updateTime,
         onResize;
 
-    allCircles = [
-        hoursCircle,
-        minutesCircle,
-        secondsCircle
-    ];
+    allCircles = {
+        hours: {
+            element: doc.getElementById('hours')
+        },
+        minutes: {
+            element: doc.getElementById('minutes')
+        },
+        seconds: {
+            element: doc.getElementById('seconds')
+        }
+    };
 
     // Source: http://goo.gl/c3mZHP
     debounce = function (func, wait) {
@@ -56,39 +60,58 @@
         };
     };
 
-
     makeText = function (val) {
-        return parseInt(val, 10);
+        var output = parseInt(val, 10);
+
+        if (output.toString().length === 1) {
+            return '0' + output.toString();
+        }
+
+        return output;
     };
 
-    makeCircleOptions = function (elementId, maxVal) {
+    makeCircleOptions = function (elementId, maxVal, color) {
         return {
             id: elementId,
             radius: 100,
             maxValue: maxVal,
             duration: null,
             width: 10,
+            colors: ['#95a5a6', color],
             text: makeText
         };
     };
 
+    updateTime = function () {
+        var currentTime = new Date();
+
+        allCircles.hours.circle.update(currentTime.getHours());
+        allCircles.minutes.circle.update(currentTime.getMinutes());
+        allCircles.seconds.circle.update(currentTime.getSeconds());
+    };
+
     onResize = debounce(function () {
-        console.log('resize');
+        Object.keys(allCircles).forEach(function (key) {
+            var newWidth = allCircles[key].element.offsetWidth;
+
+            allCircles[key].circle.updateRadius(newWidth / 2);
+            allCircles[key].circle.updateWidth(newWidth / 2 * 0.25);
+        });
     }, INTERVAL_SMALL);
 
     (function () {
-        hoursCircle = c.create(makeCircleOptions('hours', 24));
-        minutesCircle = c.create(makeCircleOptions('minutes', 60));
-        secondsCircle = c.create(makeCircleOptions('seconds', 60));
+        allCircles.hours.circle = c.create(
+            makeCircleOptions('hours', 24, '#c0392b')
+        );
+        allCircles.minutes.circle =  c.create(
+            makeCircleOptions('minutes', 60, '#d35400')
+        );
+        allCircles.seconds.circle = c.create(
+            makeCircleOptions('seconds', 60, '#f39c12')
+        );
 
-        win.setInterval(function () {
-            var currentTime = new Date();
-
-            hoursCircle.update(currentTime.getHours());
-            minutesCircle.update(currentTime.getMinutes());
-            secondsCircle.update(currentTime.getSeconds());
-        }, INTERVAL_BIG);
-
+        win.setInterval(updateTime, INTERVAL_BIG);
         win.addEventListener('resize', onResize);
+        onResize();
     }());
-}(window));
+}(window, document));

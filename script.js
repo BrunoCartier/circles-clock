@@ -110,8 +110,10 @@
             makeCircleOptions('seconds', 60, '#f39c12')
         );
 
-        win.setInterval(updateTime, INTERVAL_BIG);
-        win.addEventListener('resize', onResize);
         onResize();
+        updateTime();
+
+        win.addEventListener('resize', onResize);
+        win.setInterval(updateTime, INTERVAL_BIG);
     }());
 }(window, document));

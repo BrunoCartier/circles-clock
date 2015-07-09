@@ -90,14 +90,14 @@
         allCircles.seconds.circle.update(currentTime.getSeconds());
     };
 
-    onResize = debounce(function () {
+    onResize = function () {
         Object.keys(allCircles).forEach(function (key) {
             var newWidth = allCircles[key].element.offsetWidth;
 
             allCircles[key].circle.updateRadius(newWidth / 2);
             allCircles[key].circle.updateWidth(newWidth / 2 * 0.25);
         });
-    }, INTERVAL_SMALL);
+    };
 
     (function () {
         allCircles.hours.circle = c.create(
@@ -113,7 +113,7 @@
         onResize();
         updateTime();
 
-        win.addEventListener('resize', onResize);
+        win.addEventListener('resize', debounce(onResize, INTERVAL_SMALL));
         win.setInterval(updateTime, INTERVAL_BIG);
     }());
 }(window, document));
